@@ -7,7 +7,7 @@
 
 1. Clone the repository:
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/Marsic228/Mole-Classification
 ```
 
 2. Create virtual environment:
@@ -22,7 +22,7 @@ source venv/Scripts/activate
 
 4. Install dependencies:
 ```bash
-pip install requests
+pip install -r requirements.txt
 ```
 
 5. Configure environment:
