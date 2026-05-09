@@ -1,0 +1,19 @@
+# Python virtual environment
+venv/
+
+# Python cache
+__pycache__/ 
+*.pyc
+
+# Environment secrets
+.env
+
+# Dataset images (too large for Git)
+images/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/

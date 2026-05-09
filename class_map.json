@@ -1,0 +1,9 @@
+{
+  "nv": "Melanocytic Nevi",
+  "mel": "Melanoma",
+  "bkl": "Benign Keratosis-like Lesions",
+  "bcc": "Basal Cell Carcinoma",
+  "akiec": "Actinic Keratoses and Intraepithelial Carcinoma",
+  "vasc": "Vascular Lesions",
+  "df": "Dermatofibroma"
+}
