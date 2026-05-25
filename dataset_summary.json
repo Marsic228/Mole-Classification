@@ -1,0 +1,54 @@
+{
+  "total_records": 10015,
+  "has_records": true,
+  "class_count": 7,
+  "image_size": [
+    224,
+    224
+  ],
+  "config": {
+    "metadata_path": "HAM10000_metadata.csv",
+    "image_dirs": [
+      "data/images"
+    ],
+    "num_classes": 7,
+    "image_size": [
+      224,
+      224
+    ],
+    "split_ratios": [
+      0.7,
+      0.15,
+      0.15
+    ]
+  },
+  "experiment": {
+    "experiment_id": "summary_test_001",
+    "model_name": "no_model_yet",
+    "dataset_config_path": "dataset_config.json",
+    "num_epochs": 0,
+    "learning_rate": 0.0,
+    "notes": "",
+    "created_at": "2026-05-20T12:45:41.145076",
+    "metrics": {},
+    "status": "created"
+  },
+  "unique_labels": [
+    "bkl",
+    "nv",
+    "df",
+    "mel",
+    "vasc",
+    "bcc",
+    "akiec"
+  ],
+  "label_counts": {
+    "bkl": 1099,
+    "nv": 6705,
+    "df": 115,
+    "mel": 1113,
+    "vasc": 142,
+    "bcc": 514,
+    "akiec": 327
+  }
+}

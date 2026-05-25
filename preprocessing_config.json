@@ -1,0 +1,8 @@
+{
+  "expected_mode": "RGB",
+  "original_width": 600,
+  "original_height": 450,
+  "resize_width": 224,
+  "resize_height": 224,
+  "normalize": false
+}

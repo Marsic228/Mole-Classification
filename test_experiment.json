@@ -1,0 +1,14 @@
+{
+  "experiment_id": "0253095",
+  "model_name": "gpt",
+  "dataset_config_path": "data/HAM10000_metadata.csv",
+  "num_epochs": "3",
+  "learning_rate": "2",
+  "notes": "",
+  "created_at": "2026-05-15T11:06:48.784402",
+  "metrics": {
+    "accuracy": 0.85,
+    "loss": 0.42
+  },
+  "status": "completed"
+}

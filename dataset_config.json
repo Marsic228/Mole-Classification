@@ -1,0 +1,1 @@
+{"metadata_path": "data/HAM10000_metadata.csv", "image_dirs": ["data/images_part_1", "data/images_part_2"], "num_classes": 7, "image_size": [372, 372], "split_ratios": [0.7, 0.15, 0.15]}
