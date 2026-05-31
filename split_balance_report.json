@@ -1,0 +1,101 @@
+{
+  "train": {
+    "total_records": 7018,
+    "label_distribution": {
+      "vasc": {
+        "count": 103,
+        "percent": 1.47
+      },
+      "nv": {
+        "count": 4657,
+        "percent": 66.36
+      },
+      "mel": {
+        "count": 796,
+        "percent": 11.34
+      },
+      "bcc": {
+        "count": 373,
+        "percent": 5.31
+      },
+      "akiec": {
+        "count": 243,
+        "percent": 3.46
+      },
+      "bkl": {
+        "count": 770,
+        "percent": 10.97
+      },
+      "df": {
+        "count": 76,
+        "percent": 1.08
+      }
+    }
+  },
+  "val": {
+    "total_records": 1512,
+    "label_distribution": {
+      "bkl": {
+        "count": 159,
+        "percent": 10.52
+      },
+      "nv": {
+        "count": 1029,
+        "percent": 68.06
+      },
+      "bcc": {
+        "count": 55,
+        "percent": 3.64
+      },
+      "mel": {
+        "count": 177,
+        "percent": 11.71
+      },
+      "vasc": {
+        "count": 27,
+        "percent": 1.79
+      },
+      "akiec": {
+        "count": 43,
+        "percent": 2.84
+      },
+      "df": {
+        "count": 22,
+        "percent": 1.46
+      }
+    }
+  },
+  "test": {
+    "total_records": 1485,
+    "label_distribution": {
+      "mel": {
+        "count": 140,
+        "percent": 9.43
+      },
+      "nv": {
+        "count": 1019,
+        "percent": 68.62
+      },
+      "bkl": {
+        "count": 170,
+        "percent": 11.45
+      },
+      "bcc": {
+        "count": 86,
+        "percent": 5.79
+      },
+      "akiec": {
+        "count": 41,
+        "percent": 2.76
+      },
+      "df": {
+        "count": 17,
+        "percent": 1.14
+      },
+      "vasc": {
+        "count": 12,
+        "percent": 0.81
+      }
+    }
+  }
+}
