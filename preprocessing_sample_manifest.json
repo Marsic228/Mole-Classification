@@ -1,0 +1,44 @@
+{
+  "train": [
+    {
+      "image_id": "ISIC_0030283",
+      "split": "train",
+      "label": "vasc",
+      "saved_path": "data\\processed_sample_real\\train\\vasc\\ISIC_0030283_224x224.jpg"
+    },
+    {
+      "image_id": "ISIC_0031135",
+      "split": "train",
+      "label": "nv",
+      "saved_path": "data\\processed_sample_real\\train\\nv\\ISIC_0031135_224x224.jpg"
+    }
+  ],
+  "val": [
+    {
+      "image_id": "ISIC_0029139",
+      "split": "val",
+      "label": "bkl",
+      "saved_path": "data\\processed_sample_real\\val\\bkl\\ISIC_0029139_224x224.jpg"
+    },
+    {
+      "image_id": "ISIC_0030810",
+      "split": "val",
+      "label": "nv",
+      "saved_path": "data\\processed_sample_real\\val\\nv\\ISIC_0030810_224x224.jpg"
+    }
+  ],
+  "test": [
+    {
+      "image_id": "ISIC_0033027",
+      "split": "test",
+      "label": "mel",
+      "saved_path": "data\\processed_sample_real\\test\\mel\\ISIC_0033027_224x224.jpg"
+    },
+    {
+      "image_id": "ISIC_0030050",
+      "split": "test",
+      "label": "nv",
+      "saved_path": "data\\processed_sample_real\\test\\nv\\ISIC_0030050_224x224.jpg"
+    }
+  ]
+}

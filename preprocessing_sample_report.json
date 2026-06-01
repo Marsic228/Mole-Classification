@@ -1,0 +1,6 @@
+{
+  "train_count": 2,
+  "val_count": 2,
+  "test_count": 2,
+  "total_processed": 6
+}
