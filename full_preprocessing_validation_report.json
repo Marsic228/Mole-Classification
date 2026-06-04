@@ -1,0 +1,10 @@
+{
+  "train_count": 7018,
+  "val_count": 1512,
+  "test_count": 1485,
+  "total_checked": 10015,
+  "missing_count": 0,
+  "wrong_size_count": 0,
+  "all_files_exist": true,
+  "all_sizes_ok": true
+}

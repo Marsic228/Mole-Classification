@@ -1,0 +1,6 @@
+{
+  "train_count": 7018,
+  "val_count": 1512,
+  "test_count": 1485,
+  "total_processed": 10015
+}
