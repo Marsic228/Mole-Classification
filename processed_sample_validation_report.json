@@ -1,0 +1,10 @@
+{
+  "train_count": 2,
+  "val_count": 2,
+  "test_count": 2,
+  "total_checked": 6,
+  "missing_count": 0,
+  "wrong_size_count": 0,
+  "all_files_exist": true,
+  "all_sizes_ok": true
+}
