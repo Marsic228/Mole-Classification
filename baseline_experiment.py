@@ -14,11 +14,12 @@ def save_json(data, path):
     with open(path, "w") as file:
         json.dump(data, file, indent=2)
 
-def build_experiment_report(max_batches, train_loss, val_loss, val_accuracy):
+def build_experiment_report(train_max_batches, val_max_batches, train_loss, val_loss, val_accuracy):
     created_at = datetime.now().isoformat()
     report = {
         "created_at": created_at,
-        "max_batches": max_batches,
+        "train_max_batches": train_max_batches,
+        "val_max_batches": val_max_batches,
         "train_loss": train_loss,
         "val_loss": val_loss,
         "val_accuracy": val_accuracy,
@@ -27,7 +28,7 @@ def build_experiment_report(max_batches, train_loss, val_loss, val_accuracy):
 
     return report
 
-def run_baseline_experiment(max_batches):
+def run_baseline_experiment(train_max_batches, val_max_batches):
     tensor_transform = transforms.ToTensor()
     datasets = build_split_datasets("data/processed", transform=tensor_transform)
     loaders = build_split_loaders(datasets, batch_size=8)
@@ -36,15 +37,16 @@ def run_baseline_experiment(max_batches):
     loss_function = build_loss_function()
     optimizer = build_optimizer(model, 0.001)
     
-    train_loss = run_one_train_epoch(model, loaders["train"], loss_function, optimizer, max_batches=max_batches)
-    val_loss, val_accuracy = run_validation_epoch(model, loaders["val"], loss_function, max_batches=max_batches)
-    report = build_experiment_report(max_batches, train_loss, val_loss, val_accuracy)
+    train_loss = run_one_train_epoch(model, loaders["train"], loss_function, optimizer, max_batches=train_max_batches)
+    val_loss, val_accuracy = run_validation_epoch(model, loaders["val"], loss_function, max_batches=val_max_batches)
+    report = build_experiment_report(train_max_batches, val_max_batches, train_loss, val_loss, val_accuracy)
     return report
 
 def main():
-    max_batches = 100
-
-    report = run_baseline_experiment(max_batches)
+    train_max_batches = 100
+    val_max_batches = None
+    report = run_baseline_experiment(train_max_batches, val_max_batches)
+    
     save_json(report, "baseline_experiment_report.json")
     print(report)
 if __name__ == "__main__":

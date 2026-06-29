@@ -1,8 +1,9 @@
 {
-  "created_at": "2026-06-29T12:35:26.956572",
-  "max_batches": 100,
-  "train_loss": 1.1884541848301888,
-  "val_loss": 1.390114358663559,
-  "val_accuracy": 0.43,
+  "created_at": "2026-06-29T12:44:48.234893",
+  "train_max_batches": 100,
+  "val_max_batches": null,
+  "train_loss": 1.2724013823270797,
+  "val_loss": 1.071032661215338,
+  "val_accuracy": 0.6805555555555556,
   "interpretation": "This is a limited baseline training experiment, not final model quality."
 }
