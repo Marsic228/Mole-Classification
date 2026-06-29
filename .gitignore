@@ -18,3 +18,6 @@ Thumbs.db
 
 # IDE settings
 .vscode/
+
+# Generated reports / manifests
+/full_preprocessing_manifest.json
