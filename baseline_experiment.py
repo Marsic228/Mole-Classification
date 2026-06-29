@@ -8,6 +8,7 @@ from dataset_loader_check import build_split_datasets, build_split_loaders
 from baseline_cnn_forward_check import build_baseline_cnn
 from training_step_check import build_loss_function, build_optimizer
 from one_epoch_training_check import run_one_train_epoch, run_validation_epoch
+from confusion_matrix_check import collect_validation_predictions, build_confusion_matrix
 
 def save_json(data, path):
     path = Path(path)
@@ -40,13 +41,18 @@ def run_baseline_experiment(train_max_batches, val_max_batches):
     train_loss = run_one_train_epoch(model, loaders["train"], loss_function, optimizer, max_batches=train_max_batches)
     val_loss, val_accuracy = run_validation_epoch(model, loaders["val"], loss_function, max_batches=val_max_batches)
     report = build_experiment_report(train_max_batches, val_max_batches, train_loss, val_loss, val_accuracy)
-    return report
+    return report, model, loaders
 
 def main():
     train_max_batches = 100
     val_max_batches = None
-    report = run_baseline_experiment(train_max_batches, val_max_batches)
-    
+    report, model, loaders = run_baseline_experiment(train_max_batches, val_max_batches)
+    all_predictions, all_labels = collect_validation_predictions(model, loaders["val"], max_batches=val_max_batches)
+    matrix = build_confusion_matrix(all_predictions, all_labels, num_classes=7)
+    class_names = loaders["val"].dataset.classes
+    report["class_names"] = class_names
+    report["confusion_matrix"] = matrix
+    report["total_validation_checked"] = len(all_labels)
     save_json(report, "baseline_experiment_report.json")
     print(report)
 if __name__ == "__main__":

@@ -1,9 +1,84 @@
 {
-  "created_at": "2026-06-29T12:44:48.234893",
+  "created_at": "2026-06-29T13:14:04.194140",
   "train_max_batches": 100,
   "val_max_batches": null,
-  "train_loss": 1.2724013823270797,
-  "val_loss": 1.071032661215338,
+  "train_loss": 1.183523144721985,
+  "val_loss": 0.950488436395529,
   "val_accuracy": 0.6805555555555556,
-  "interpretation": "This is a limited baseline training experiment, not final model quality."
+  "interpretation": "This is a limited baseline training experiment, not final model quality.",
+  "class_names": [
+    "akiec",
+    "bcc",
+    "bkl",
+    "df",
+    "mel",
+    "nv",
+    "vasc"
+  ],
+  "confusion_matrix": [
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      43,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      55,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      159,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      22,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      177,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1029,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      27,
+      0
+    ]
+  ],
+  "total_validation_checked": 1512
 }
