@@ -21,3 +21,4 @@ Thumbs.db
 
 # Generated reports / manifests
 /full_preprocessing_manifest.json
+checkpoints/
