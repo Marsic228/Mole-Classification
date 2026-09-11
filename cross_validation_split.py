@@ -57,7 +57,15 @@ def get_fold_metadata(fold_number=1):
             return train_fold_metadata, val_fold_metadata
 
 if __name__ == "__main__":
-    sanity_transform = transforms.ToTensor()
+    train_transform = transforms.ToTensor()
+
+    special_train_transform = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(10),
+        transforms.ToTensor(),
+    ])
+
+    val_transform = transforms.ToTensor()
 
     for fold, (train_idx, val_idx) in enumerate(
         splitter.split(X, y, groups),
@@ -89,13 +97,15 @@ if __name__ == "__main__":
             train_dataset = CrossValidationDataset(
                 train_metadata,
                 "data/processed",
-                transform=sanity_transform
+                transform=train_transform,
+                special_transform=special_train_transform,
+                special_classes=["mel"],
             )
 
             val_dataset = CrossValidationDataset(
                 val_metadata,
                 "data/processed",
-                transform=sanity_transform
+                transform=val_transform,
             )
 
             image, label = train_dataset[0]
@@ -135,5 +145,6 @@ if __name__ == "__main__":
             print("Class mapping:", train_dataset.class_to_idx)
             print("Image shape:", image.shape)
             print("Label:", label)
+            print("Special class indices:", train_dataset.special_class_indices)
 
             break

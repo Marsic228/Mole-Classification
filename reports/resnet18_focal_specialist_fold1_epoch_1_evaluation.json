@@ -1,0 +1,46 @@
+{
+  "class_names": [
+    "bkl",
+    "mel",
+    "nv"
+  ],
+  "total_checked": 1518,
+  "confusion_matrix": [
+    [
+      113,
+      23,
+      50
+    ],
+    [
+      24,
+      119,
+      52
+    ],
+    [
+      17,
+      66,
+      1054
+    ]
+  ],
+  "class_metrics": {
+    "bkl": {
+      "precision": 0.7338,
+      "recall": 0.6075,
+      "f1": 0.6647
+    },
+    "mel": {
+      "precision": 0.5721,
+      "recall": 0.6103,
+      "f1": 0.5906
+    },
+    "nv": {
+      "precision": 0.9118,
+      "recall": 0.927,
+      "f1": 0.9193
+    }
+  },
+  "overall_accuracy": 0.847167325428195,
+  "macro_precision": 0.7392333333333334,
+  "macro_recall": 0.7149333333333333,
+  "macro_f1": 0.7248666666666667
+}
