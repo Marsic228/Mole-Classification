@@ -8,17 +8,33 @@ from pathlib import Path
 def collect_validation_predictions(model, val_loader, max_batches=None):
     model.eval()
 
+    device = next(model.parameters()).device
+
     all_predictions = []
     all_labels = []
 
-    with torch.no_grad():
+    with torch.inference_mode():
         for images, labels in val_loader:
-            logits = model(images)
+            images = images.to(device)
+
+            with torch.autocast(
+                device_type=device.type,
+                enabled=(device.type == "cuda")
+            ):
+                logits = model(images)
+
             batch_predictions = logits.argmax(dim=1)
-            all_predictions.extend(batch_predictions.tolist())
+
+            all_predictions.extend(
+                batch_predictions.cpu().tolist()
+            )
             all_labels.extend(labels.tolist())
 
-            if max_batches is not None and len(all_predictions) >= max_batches * labels.size(0):
+            if (
+                max_batches is not None
+                and len(all_predictions)
+                >= max_batches * labels.size(0)
+            ):
                 break
 
     return all_predictions, all_labels

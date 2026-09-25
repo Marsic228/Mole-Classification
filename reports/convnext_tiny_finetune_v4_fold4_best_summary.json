@@ -1,0 +1,5 @@
+{
+  "fold": 4,
+  "best_epoch": 12,
+  "best_macro_f1": 0.6954942407314
+}

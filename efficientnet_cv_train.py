@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from training_step_check import run_training_step
 
 from torch.utils.data import DataLoader, WeightedRandomSampler
@@ -12,6 +13,22 @@ from utils import count_images_per_class, build_class_weights
 from train import save_json, save_checkpoint, build_epoch_report
 from one_epoch_training_check import run_validation_epoch
 
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=2.0):
+        super().__init__()
+        self.gamma = gamma
+
+    def forward(self, logits, targets):
+        ce_loss = F.cross_entropy(
+            logits,
+            targets,
+            reduction="none"
+        )
+
+        pt = torch.exp(-ce_loss)
+        focal_loss = ((1 - pt) ** self.gamma) * ce_loss
+
+        return focal_loss.mean()
 
 
 def run_efficientnet_train_epoch(
@@ -22,6 +39,7 @@ def run_efficientnet_train_epoch(
 ):
     model.eval()
 
+    model.features[6].train()
     model.features[7].train()
     model.features[8].train()
     model.classifier.train()
@@ -83,19 +101,19 @@ def run_fold(fold_number, num_epochs=3):
     # Fresh model for this fold
     model = efficientnet_b0(weights=weights)
 
+    # Freeze everything first
     for parameter in model.parameters():
         parameter.requires_grad = False
 
-    for parameter in model.features[7].parameters():
+    # Unfreeze the last three feature blocks
+    for parameter in model.features[-3:].parameters():
         parameter.requires_grad = True
 
-    for parameter in model.features[8].parameters():
-        parameter.requires_grad = True
-
+    # Replace the classifier
     in_features = model.classifier[1].in_features
     model.classifier[1] = nn.Linear(in_features, 7)
 
-    loss_function = nn.CrossEntropyLoss()
+    loss_function = FocalLoss(gamma=2.0)
 
     optimizer = torch.optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()),
@@ -132,7 +150,7 @@ def run_fold(fold_number, num_epochs=3):
 
         save_json(
             epoch_report,
-            f"reports/efficientnet_b0_fold{fold_number}_epoch_{epoch}_report.json"
+            f"reports/efficientnet_b0_new_fold{fold_number}_epoch_{epoch}_report.json"
         )
 
         save_checkpoint(
@@ -140,17 +158,17 @@ def run_fold(fold_number, num_epochs=3):
             optimizer,
             epoch,
             epoch_report,
-            f"checkpoints/efficientnet_b0_fold{fold_number}_epoch_{epoch}.pt"
+            f"checkpoints/efficientnet_b0_new_fold{fold_number}_epoch_{epoch}.pt"
         )
 
     save_json(
         history,
-        f"reports/efficientnet_b0_fold{fold_number}_training_history.json"
+        f"reports/efficientnet_b0_new_fold{fold_number}_training_history.json"
     )
 
     return history
 
 if __name__ == "__main__":
-    for fold_number in range(2, 6):
+    for fold_number in range(1, 6):
         print(f"\n===== FOLD {fold_number} =====")
         run_fold(fold_number, num_epochs=3)
