@@ -16,6 +16,23 @@ from trained_model_evaluation import (
     calculate_overall_accuracy,
 )
 
+class SoftVotingEnsemble(nn.Module):
+    def __init__(self, model_a, model_b):
+        super().__init__()
+        self.model_a = model_a
+        self.model_b = model_b
+
+    def forward(self, x):
+        logits_a = self.model_a(x)
+        logits_b = self.model_b(x)
+
+        probs_a = torch.softmax(logits_a, dim=1)
+        probs_b = torch.softmax(logits_b, dim=1)
+
+        ensemble_probs = (probs_a + probs_b) / 2
+
+        return torch.log(ensemble_probs.clamp_min(1e-8))
+
 DEVICE = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
 )
@@ -99,11 +116,24 @@ for fold_number in range(1, 6):
     class_names = val_dataset.classes
     num_classes = len(class_names)
 
-    model = load_convnext_model(
-        f"checkpoints/convnext_tiny_finetune_v5_"
+    model_v13 = load_convnext_model(
+        f"checkpoints/convnext_tiny_finetune_v13_ema_seed123_"
         f"fold{fold_number}_best.pt",
         num_classes
     )
+
+    model_v4 = load_convnext_model(
+        f"checkpoints/convnext_tiny_finetune_v14_ema_seed123_"
+        f"fold{fold_number}_best.pt",
+        num_classes
+    )
+
+    model = SoftVotingEnsemble(
+        model_v13,
+        model_v4
+    ).to(DEVICE)
+
+    model.eval()
 
     report = build_evaluation_report(
         model,
@@ -126,8 +156,8 @@ for fold_number in range(1, 6):
 
     save_evaluation_report(
         report,
-        f"reports/convnext_tiny_finetune_v5_"
-        f"fold{fold_number}_best_evaluation.json"
+        f"reports/convnext_tiny_finetune_v13+v4_"
+        f"fold{fold_number}_evaluation.json"
     )
 
     all_reports.append(report)

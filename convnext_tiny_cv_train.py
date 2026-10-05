@@ -2,6 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import time
+import random
+import copy
+
+import numpy as np
 
 from sklearn.metrics import f1_score
 
@@ -33,6 +37,95 @@ class FocalLoss(nn.Module):
         focal_loss = ((1 - pt) ** self.gamma) * ce_loss
 
         return focal_loss.mean()
+
+class SAM:
+    def __init__(self, base_optimizer, rho=0.05):
+        if rho < 0.0:
+            raise ValueError(f"Invalid rho: {rho}")
+
+        self.base_optimizer = base_optimizer
+        self.rho = rho
+
+        self.param_groups = base_optimizer.param_groups
+        self.state = {}
+
+    @torch.no_grad()
+    def first_step(self, amp_scale=1.0, zero_grad=False):
+        grad_norm = torch.norm(
+            torch.stack([
+                (p.grad / amp_scale).norm(p=2)
+                for group in self.param_groups
+                for p in group["params"]
+                if p.grad is not None
+            ]),
+            p=2
+        )
+
+        for group in self.param_groups:
+            for p in group["params"]:
+                if p.grad is None:
+                    continue
+
+                grad = p.grad / amp_scale
+
+                e_w = grad * (
+                    self.rho / (grad_norm + 1e-12)
+                )
+
+                self.state[p] = {"e_w": e_w}
+
+                # w -> w + epsilon
+                p.add_(e_w)
+
+        if zero_grad:
+            self.zero_grad()
+
+    @torch.no_grad()
+    def restore(self, zero_grad=False):
+        for group in self.param_groups:
+            for p in group["params"]:
+                if p not in self.state:
+                    continue
+
+                # w + epsilon -> w
+                p.sub_(self.state[p]["e_w"])
+
+        self.state.clear()
+
+        if zero_grad:
+            self.zero_grad()
+
+    def zero_grad(self):
+        self.base_optimizer.zero_grad()
+
+    def state_dict(self):
+        return self.base_optimizer.state_dict()
+
+    def load_state_dict(self, state_dict):
+        self.base_optimizer.load_state_dict(state_dict)
+
+
+TRAIN_SEED = 123
+EMA_DECAY = 0.999
+
+def update_ema(ema_model, model, decay):
+    with torch.no_grad():
+        for ema_param, model_param in zip(
+            ema_model.parameters(),
+            model.parameters()
+        ):
+            ema_param.mul_(decay).add_(
+                model_param,
+                alpha=1.0 - decay
+            )
+
+def set_training_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 TRAINABLE_FEATURE_MODULES = 5
 
@@ -98,15 +191,50 @@ def run_validation_epoch_with_macro_f1(
 
     return val_loss, val_accuracy, val_macro_f1
 
+def apply_cutmix(images, labels, alpha=1.0):
+    lam = np.random.beta(alpha, alpha)
+
+    batch_size = images.size(0)
+    index = torch.randperm(batch_size, device=images.device)
+
+    labels_a = labels
+    labels_b = labels[index]
+
+    _, _, height, width = images.shape
+
+    cut_ratio = np.sqrt(1.0 - lam)
+    cut_w = int(width * cut_ratio)
+    cut_h = int(height * cut_ratio)
+
+    cx = np.random.randint(width)
+    cy = np.random.randint(height)
+
+    x1 = np.clip(cx - cut_w // 2, 0, width)
+    x2 = np.clip(cx + cut_w // 2, 0, width)
+    y1 = np.clip(cy - cut_h // 2, 0, height)
+    y2 = np.clip(cy + cut_h // 2, 0, height)
+
+    mixed_images = images.clone()
+    mixed_images[:, :, y1:y2, x1:x2] = \
+        images[index, :, y1:y2, x1:x2]
+
+    lam = 1.0 - (
+        (x2 - x1) * (y2 - y1)
+        / (width * height)
+    )
+
+    return mixed_images, labels_a, labels_b, lam
+
 
 def run_convnext_train_epoch(
     model,
+    ema_model,
     train_loader,
     loss_function,
     optimizer,
-    scaler,
     device
 ):
+    
     model.eval()
 
     model.features[-TRAINABLE_FEATURE_MODULES:].train()
@@ -118,40 +246,81 @@ def run_convnext_train_epoch(
         images = images.to(device)
         labels = labels.to(device)
 
-        loss = run_training_step_amp(
+        loss = run_training_step(
             model,
             images,
             labels,
             loss_function,
-            optimizer,
-            scaler
+            optimizer
+        )
+
+        update_ema(
+            ema_model,
+            model,
+            EMA_DECAY
         )
 
         losses.append(loss)
 
     return sum(losses) / len(losses)
 
-def run_training_step_amp(
+def run_training_step(
     model,
     images,
     labels,
     loss_function,
     optimizer,
-    scaler
+    cutmix_alpha=1.0,
+    cutmix_prob=0.5,
 ):
     optimizer.zero_grad()
 
-    with torch.amp.autocast("cuda"):
-        logits = model(images)
-        loss = loss_function(logits, labels)
+    use_cutmix = np.random.rand() < cutmix_prob
 
-    scaler.scale(loss).backward()
-    scaler.step(optimizer)
-    scaler.update()
+    if use_cutmix:
+        images, labels_a, labels_b, lam = apply_cutmix(
+            images,
+            labels,
+            alpha=cutmix_alpha,
+        )
+
+    def compute_loss():
+        logits = model(images)
+
+        if use_cutmix:
+            return (
+                lam * loss_function(logits, labels_a)
+                + (1.0 - lam) * loss_function(logits, labels_b)
+            )
+
+        return loss_function(logits, labels)
+
+    # SAM pass 1
+    loss = compute_loss()
+    loss.backward()
+
+    optimizer.first_step(
+        amp_scale=1.0,
+        zero_grad=True
+    )
+
+    # SAM pass 2
+    second_loss = compute_loss()
+    second_loss.backward()
+
+    # Return from w + epsilon -> w
+    optimizer.restore(zero_grad=False)
+
+    # One real Adam update
+    optimizer.base_optimizer.step()
+
+    optimizer.zero_grad()
 
     return loss.item()
 
 def run_fold(fold_number, num_epochs=15):
+    set_training_seed(TRAIN_SEED)
+
     weights = ConvNeXt_Tiny_Weights.DEFAULT
     transform = weights.transforms()
 
@@ -210,6 +379,12 @@ def run_fold(fold_number, num_epochs=15):
 
     model = model.to(DEVICE)
 
+    ema_model = copy.deepcopy(model)
+    ema_model.eval()
+
+    for parameter in ema_model.parameters():
+        parameter.requires_grad = False
+
     loss_function = FocalLoss(gamma=2.0)
 
 
@@ -218,16 +393,20 @@ def run_fold(fold_number, num_epochs=15):
         if p.requires_grad
     ]
 
-    optimizer = torch.optim.Adam(
-        trainable_params,
-        lr=1e-4
+    base_optimizer = torch.optim.Adam(
+    trainable_params,
+    lr=1e-4
+)
+
+    optimizer = SAM(
+        base_optimizer,
+        rho=0.05
     )
-    scaler = torch.amp.GradScaler("cuda")
 
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer,
+        base_optimizer,
         T_max=num_epochs,
-        eta_min=1e-6,
+        eta_min=1e-6
     )
 
     history = []
@@ -243,16 +422,16 @@ def run_fold(fold_number, num_epochs=15):
     for epoch in range(1, num_epochs + 1):
         train_loss = run_convnext_train_epoch(
             model,
+            ema_model,
             train_loader,
             loss_function,
             optimizer,
-            scaler,
             DEVICE
         )
 
         val_loss, val_accuracy, val_macro_f1 = (
             run_validation_epoch_with_macro_f1(
-                model,
+                ema_model,
                 val_loader,
                 loss_function,
                 DEVICE
@@ -280,13 +459,12 @@ def run_fold(fold_number, num_epochs=15):
             f"val_loss={val_loss:.4f}, "
             f"val_accuracy={val_accuracy:.4f}, "
             f"val_macro_f1={val_macro_f1:.4f}, "
-            f"lr={current_lr:.8f}"
         )
 
         
         save_json(
             epoch_report,
-            f"reports/convnext_tiny_finetune_v4_gpu_amp_"
+            f"reports/convnext_tiny_finetune_v14_sam_ema_seed123_"
             f"fold{fold_number}_epoch_{epoch}_report.json"
         )
 
@@ -296,11 +474,11 @@ def run_fold(fold_number, num_epochs=15):
             epochs_without_improvement = 0
 
             save_checkpoint(
-                model,
+                ema_model,
                 optimizer,
                 epoch,
                 epoch_report,
-                f"checkpoints/convnext_tiny_finetune_v4_gpu_amp_"
+                f"checkpoints/convnext_tiny_finetune_v14_sam_ema_seed123_"
                 f"fold{fold_number}_best.pt"
             )
 
@@ -329,19 +507,23 @@ def run_fold(fold_number, num_epochs=15):
 
     save_json(
         history,
-        f"reports/convnext_tiny_finetune_v4_gpu_amp_"
+        f"reports/convnext_tiny_finetune_v14_sam_ema_seed123_"
         f"fold{fold_number}_training_history.json"
     )
 
     best_summary = {
         "fold": fold_number,
+        "train_seed": TRAIN_SEED,
+        "ema_decay": EMA_DECAY,
         "best_epoch": best_epoch,
         "best_macro_f1": best_macro_f1,
+        "sam_rho": 0.05,
+        "optimizer": "SAM(Adam)",
     }
 
     save_json(
         best_summary,
-        f"reports/convnext_tiny_finetune_v4_gpu_amp_"
+        f"reports/convnext_tiny_finetune_v14_sam_ema_seed123_"
         f"fold{fold_number}_best_summary.json"
     )
 
@@ -350,13 +532,13 @@ def run_fold(fold_number, num_epochs=15):
 if __name__ == "__main__":
     start_time = time.perf_counter()
 
-    for fold_number in range(1, 6):
+    for fold_number in range(2, 6):
         print(f"\n===== FOLD {fold_number} =====")
         run_fold(fold_number, num_epochs=15)
 
     elapsed = time.perf_counter() - start_time
 
     print(
-        f"\nFull v4 GPU+AMP CV time: "
+        f"\nV14 sanity-check time: "
         f"{elapsed / 60:.1f} minutes"
     )

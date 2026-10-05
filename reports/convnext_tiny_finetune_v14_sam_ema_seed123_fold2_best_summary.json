@@ -1,0 +1,9 @@
+{
+  "fold": 2,
+  "train_seed": 123,
+  "ema_decay": 0.999,
+  "best_epoch": 7,
+  "best_macro_f1": 0.746340831985736,
+  "sam_rho": 0.05,
+  "optimizer": "SAM(Adam)"
+}

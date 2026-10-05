@@ -9,8 +9,8 @@ fold_reports = []
 for fold_number in range(1, 6):
     path = (
         f"reports/"
-        f"convnext_tiny_finetune_v5_"
-        f"fold{fold_number}_best_evaluation.json"
+        f"convnext_tiny_finetune_v12_cutmix_p025_"
+        f"fold{fold_number}_evaluation.json"
     )
 
     with open(path, "r", encoding="utf-8") as file:
@@ -43,7 +43,7 @@ for metric_name in metric_names:
 
 save_evaluation_report(
     cv_summary,
-    "reports/convnext_tiny_finetune_v5_cv_summary.json"
+    "reports/convnext_tiny_finetune_v12_cutmix_p025_cv_summary.json"
 )
 
 print("\n===== CV SUMMARY =====")
@@ -84,7 +84,7 @@ for class_name in class_names:
 
 save_evaluation_report(
     per_class_summary,
-    "reports/convnext_tiny_finetune_v5_per_class_cv_summary.json"
+    "reports/convnext_tiny_finetune_v12_cutmix_p025_per_class_cv_summary.json"
 )
 
 print("\nPer-class:")
