@@ -22,3 +22,12 @@ Thumbs.db
 # Generated reports / manifests
 /full_preprocessing_manifest.json
 checkpoints/
+
+# External repositories
+/PanDerm/
+
+# Generated features and predictions
+/cache/
+
+# Jupyter temporary files
+**/.ipynb_checkpoints/

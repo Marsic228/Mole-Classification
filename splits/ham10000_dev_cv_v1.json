@@ -1,0 +1,98 @@
+{
+  "name": "ham10000_dev_cv_v1",
+  "use": "Future experiments ONLY; historical checkpoints retain their original folds",
+  "origin": "convnext (previously audited venv, NOT PanDerm original environment)",
+  "origin_export": "reports\\repro_audit\\convnext_folds.csv",
+  "origin_export_sha256": "a55ff247594caa882a0cd3c45daabaa056fa864bdba850bfb172b6a3b0a67248",
+  "origin_environment_manifest": "reports\\repro_audit\\convnext_environment.json",
+  "origin_package_versions": {
+    "scikit-learn": "1.9.0",
+    "torch": "2.12.0+cu126",
+    "torchvision": "0.27.0+cu126",
+    "timm": "1.0.30",
+    "pandas": "3.0.5",
+    "numpy": "2.4.6"
+  },
+  "origin_source_sha256": {
+    "cross_validation_split.py": "8ba4cc5b7c34bc51b8eba68f25276a1de29d9996fb3a030e63442e290f4b36aa",
+    "split_dataset.py": "783331e3879d7a0be02142251808f83b11839b3ad59a9e22772eb07a72bf99f0",
+    "split_config.py": "939e88fae38f3d9cdc3890b0feb532a919997d6913b875fad41fda3e2d7f98b0",
+    "validate_image_paths.py": "829aa9bcd1476bc3b80e6b3b5be182d2cecf5abccbb10004fd9fc45d48ebffb4",
+    "HAM10000_metadata.csv": "de17ec44cb25ea9c3f6378ba18d69224c740afd62e86ec2edc6a894d6aa663d3"
+  },
+  "frozen_csv_sha256": "a55ff247594caa882a0cd3c45daabaa056fa864bdba850bfb172b6a3b0a67248",
+  "n_images": 8530,
+  "n_lesions": 6349,
+  "n_folds": 5,
+  "fold_counts": {
+    "1": {
+      "val": 1707,
+      "by_class": {
+        "akiec": 57,
+        "bcc": 86,
+        "bkl": 186,
+        "df": 20,
+        "mel": 195,
+        "nv": 1137,
+        "vasc": 26
+      }
+    },
+    "2": {
+      "val": 1706,
+      "by_class": {
+        "akiec": 58,
+        "bcc": 85,
+        "bkl": 186,
+        "df": 19,
+        "mel": 195,
+        "nv": 1137,
+        "vasc": 26
+      }
+    },
+    "3": {
+      "val": 1706,
+      "by_class": {
+        "akiec": 57,
+        "bcc": 86,
+        "bkl": 186,
+        "df": 19,
+        "mel": 194,
+        "nv": 1138,
+        "vasc": 26
+      }
+    },
+    "4": {
+      "val": 1705,
+      "by_class": {
+        "akiec": 57,
+        "bcc": 85,
+        "bkl": 186,
+        "df": 20,
+        "mel": 194,
+        "nv": 1137,
+        "vasc": 26
+      }
+    },
+    "5": {
+      "val": 1706,
+      "by_class": {
+        "akiec": 57,
+        "bcc": 86,
+        "bkl": 185,
+        "df": 20,
+        "mel": 195,
+        "nv": 1137,
+        "vasc": 26
+      }
+    }
+  },
+  "class_order": [
+    "akiec",
+    "bcc",
+    "bkl",
+    "df",
+    "mel",
+    "nv",
+    "vasc"
+  ]
+}
